@@ -1,5 +1,7 @@
 import java.io.File;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Bishal Paudel on 4/19/17.
@@ -12,24 +14,24 @@ public class Main {
         long startTime = System.currentTimeMillis();
         System.out.println(startTime);
 
+        List<Thread> threads = new ArrayList();
         /* Thread creation by extending Thread class. */
-        for(int i = 0; i <= 100; i++){
-            Thread thread = new ServletThread();
-            thread.start();
+        for(int i = 0; i <= 1000; i++){
+            Thread t = new Thread(new ServletThread());
+            threads.add(t);
         }
 
-        /* Thread creation by implementing Runnable interface. */
-        for(int i = 0; i <= 100; i++){
-            Thread thread = new Thread(new Runnable(){
-                public void run(){
-                    try {
-                        (new Servlet()).doGet();
-                    } catch (SQLException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }, "Thread_"+i);
-            thread.start();
+        for(Thread t: threads){
+            t.start();
+        }
+
+        for(Thread t: threads) {
+            try {
+                t.join();
+
+            } catch (InterruptedException e) {
+                System.out.println("interrupted from main");
+            }
         }
 
         long endTime   = System.currentTimeMillis();

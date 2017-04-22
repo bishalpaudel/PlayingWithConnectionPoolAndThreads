@@ -16,38 +16,34 @@ public abstract class AbstractPool<T> {
 
     public AbstractPool() throws Exception {
         Properties prop = new Properties();
-        this.minObject = Integer.parseInt(prop.getProperty("pool.db.minObject"));
-        this.maxObject = Integer.parseInt(prop.getProperty("pool.db.maxObject"));
+        this.minObject = 1;//Integer.parseInt(prop.getProperty("pool.db.minObject"));
+        this.maxObject = 1;//Integer.parseInt(prop.getProperty("pool.db.maxObject"));
 
         createMinObjects();
     }
 
-    protected synchronized T getConnection() throws Exception {
+    protected synchronized T getObject() {
         if(! objects.isEmpty())
             return objects.poll();
-
-        T object = createObject();
-        objects.add(object);
-        return object;
+        return createObject();
     }
 
-    protected void close(T connection){
-        objects.add(connection);
+    protected void close(T object){
+        if(objects.size() > maxObject) {
+            destroyObject(object);
+        }else{
+            objects.add(object);
+        }
     }
 
-    private void createMinObjects() throws Exception {
+    private void createMinObjects() {
         while(objects.size() < minObject){
             objects.add(createObject());
         }
     }
 
-    private void MaintainMaxObjects() {
-        while(objects.size() > maxObject){
-            objects.poll();
-        }
-    }
-
-    abstract T createObject() throws Exception;
+    abstract T createObject();
+    abstract void destroyObject(T object);
 
     public Integer getMinObject() {
         return minObject;

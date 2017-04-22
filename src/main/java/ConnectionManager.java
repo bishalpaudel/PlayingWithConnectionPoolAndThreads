@@ -9,24 +9,21 @@ import java.util.List;
  */
 public class ConnectionManager {
 
-    /*
-    * Why field initialization? Because many constructors may need to initialize this same thing.
-    * Cons: If each constructor initialize it differently, then field initialization is worthless.
-    */
     List<Connection> connections = new ArrayList();
 
     public ConnectionManager() throws SQLException {
     }
 
-    public Connection getConnection() throws Exception {
+    public static Connection getConnection() throws Exception {
         try{
-            return DBConnectionPool.getInstance().getConnection();
-        }catch (SQLException ex){
+            DBConnectionPool pool = DBConnectionPool.getInstance();
+            return pool.getObject();
+        }catch (NullPointerException | SQLException ex){
             throw ex;
         }
     }
 
-    public void close(Connection connection){
+    public static void closeConnection(Connection connection) throws Exception {
         DBConnectionPool.getInstance().close(connection);
     }
 }

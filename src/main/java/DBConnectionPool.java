@@ -28,19 +28,18 @@ public class DBConnectionPool extends AbstractPool<Connection> {
     private DBConnectionPool() throws Exception {
         /* To defeat instantiation. */
         super();
-        pool = new DBConnectionPool();
+        System.out.println("I am instantiated. Only once. :)");
     }
 
-    public static DBConnectionPool getInstance(){
+
+    /* Issue 5 address this code block */
+    /* synchronized is needed only one. But is executed all the times making system slower. */
+    public synchronized static DBConnectionPool getInstance() throws Exception {
+        if(pool == null) {
+            pool = new DBConnectionPool();
+        }
         return pool;
     }
-
-/* Issue 5 address this code block */
-//    public synchronized static DBConnectionPool getInstance(){
-//        if(pool == null)
-//            pool = new DBConnectionPool();
-//        return pool;
-//    }
 
     /* To solve the 3rd issue: If different classLoaders are used, then this class may have different instances. */
     private static Class getClass(String className) throws ClassNotFoundException {
@@ -60,7 +59,22 @@ public class DBConnectionPool extends AbstractPool<Connection> {
     }
 
 
-    Connection createObject() throws SQLException {
-        return DriverManager.getConnection(DataSource.getURL());
+    public Connection createObject() {
+        try {
+            return DriverManager.getConnection(DataSource.getURL());
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    @Override
+    void destroyObject(Connection connection) {
+        try {
+            connection.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }
